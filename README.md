@@ -3,7 +3,7 @@
 use Shelly Pro 3EM values to set PV generation for iDM pump
 
 The MQTT values published by a Shelly Pro 3EM are read and written to the
-iDM heat pump every 3 minutes. At 23:00 an emergency job writes 0 to the iDM.
+iDM heat pump every 5 minutes. At 23:00 an emergency job writes 0 to the iDM.
 
 ## Configuration
 
@@ -18,7 +18,7 @@ environment variable:
 | `MQTT_TOPIC` | `shellypro3em-fce8c0d97c10/status/em:0` |
 | `IDM_IP` | `192.168.1.81` |
 | `IDM_PORT` | `502` |
-| `FEED_IN_LIMIT` | `300` (Watt) |
+| `FEED_IN_LIMIT` | `500` (Watt) |
 
 ## Deployment
 
@@ -49,7 +49,7 @@ docker run -d \
   -e MQTT_TOPIC=shellypro3em-fce8c0d97c10/status/em:0 \
   -e IDM_IP=192.168.1.81 \
   -e IDM_PORT=502 \
-  -e FEED_IN_LIMIT=300 \
+  -e FEED_IN_LIMIT=500 \
   ghcr.io/robertdiers/shelly_idmpump:<release-tag>
 ```
 
@@ -71,5 +71,6 @@ LAN devices, run it with `--network host` in addition to the options above.
 * The Shelly topic must be `status/em:0` (instantaneous power, about 1 msg/s).
   `status/emdata:0` only contains energy counters and is not usable here.
 * `total_act_power` is negative for feed-in. It is averaged over 10 messages,
-  then rounded to 100 W steps. The iDM register is only written when the value
-  changes.
+  then rounded down to 500 W steps (after the lower limit check, so values at
+  or below `feed_in_limit` stay 0). The iDM register is only written when the
+  value changes.

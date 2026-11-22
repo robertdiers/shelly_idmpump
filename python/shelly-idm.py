@@ -3,6 +3,7 @@
 from datetime import datetime
 
 import json
+import math
 import threading
 
 import paho.mqtt.client as mqtt
@@ -14,6 +15,8 @@ import Config
 SAMPLE_COUNT = 10
 # maximum time to wait for the samples (seconds)
 SAMPLE_TIMEOUT = 30
+# iDM does not need fine-grained values: use 500 W (0.5 kW) steps
+FEED_IN_STEP_KW = 0.5
 
 
 def log(msg):
@@ -63,16 +66,17 @@ def process_shelly_data(conf):
     grid_power = sum(samples) / len(samples)
 
     # keep the original threshold logic:
-    # export above feed_in_limit is passed to the iDM in kW, otherwise 0
-    # iDM does not need fine-grained values: use 100 W (0.1 kW) steps
+    # export above feed_in_limit is passed to the iDM in kW, otherwise 0.
+    # Always round down to the next 500 W step, and do it after the limit
+    # check, so values at or below feed_in_limit stay 0 (e.g. 290 W -> 0).
     if grid_power < -conf["feed_in_limit"]:
-        feed_in = round(-grid_power / 1000, 1)
+        feed_in = math.floor(-grid_power / 1000 / FEED_IN_STEP_KW) * FEED_IN_STEP_KW
     else:
-        feed_in = 0
+        feed_in = 0.0
 
     # connection iDM: only write if the rounded value actually changed
     current = IdmPump.read(conf["idm_ip"], conf["idm_port"])
-    if current is not None and abs(current - feed_in) < 0.05:
+    if current is not None and abs(current - feed_in) < FEED_IN_STEP_KW / 2:
         idmval = current
         changed = False
     else:
