@@ -1,0 +1,1 @@
+pip3 install configparser pymodbus==3.7.4 pyserial_asyncio pyserial paho-mqtt==2.1.0
