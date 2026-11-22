@@ -13,8 +13,10 @@ import Config
 
 # number of MQTT messages to average before writing to the iDM
 SAMPLE_COUNT = 10
+# do not update the iDM with less than this many samples
+MIN_SAMPLES = 8
 # maximum time to wait for the samples (seconds)
-SAMPLE_TIMEOUT = 30
+SAMPLE_TIMEOUT = 180
 # iDM does not need fine-grained values: use 500 W (0.5 kW) steps
 FEED_IN_STEP_KW = 0.5
 
@@ -59,8 +61,9 @@ def process_shelly_data(conf):
             client.loop_stop()
             client.disconnect()
 
-    if not samples:
-        log("ERROR: no Shelly values received, iDM not updated")
+    if len(samples) < MIN_SAMPLES:
+        log("ERROR: only " + str(len(samples)) + " Shelly values received (need "
+            + str(MIN_SAMPLES) + "), iDM not updated")
         return
 
     grid_power = sum(samples) / len(samples)
@@ -68,7 +71,7 @@ def process_shelly_data(conf):
     # keep the original threshold logic:
     # export above feed_in_limit is passed to the iDM in kW, otherwise 0.
     # Always round down to the next 500 W step, and do it after the limit
-    # check, so values at or below feed_in_limit stay 0 (e.g. 290 W -> 0).
+    # check, so values at or below feed_in_limit stay 0 (e.g. 900 W -> 0).
     if grid_power < -conf["feed_in_limit"]:
         feed_in = math.floor(-grid_power / 1000 / FEED_IN_STEP_KW) * FEED_IN_STEP_KW
     else:
