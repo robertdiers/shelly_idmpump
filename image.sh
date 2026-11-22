@@ -1,1 +1,1 @@
-sudo docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t docker.io/robertdiers/goodweidm:latest --push .
+sudo docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t ghcr.io/robertdiers/shelly_idmpump:latest --push .

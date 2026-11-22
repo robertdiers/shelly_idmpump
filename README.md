@@ -22,10 +22,19 @@ environment variable:
 
 ## Deployment
 
-Build the image locally:
+The released multi-arch image is published in the GitHub Container Registry:
+`ghcr.io/robertdiers/shelly_idmpump:<release-tag>` (see
+`.github/workflows/dockerbuild.yml`). Replace `<release-tag>` with the tag of
+the release you want to deploy (for example `v1.0.0`):
 
 ```bash
-docker build -t shelly-idmpump:latest .
+docker pull ghcr.io/robertdiers/shelly_idmpump:<release-tag>
+```
+
+Alternatively, build the image locally:
+
+```bash
+docker build -t ghcr.io/robertdiers/shelly_idmpump:local .
 ```
 
 Run the container, overriding the MQTT settings and the iDM IP:
@@ -41,7 +50,7 @@ docker run -d \
   -e IDM_IP=192.168.1.81 \
   -e IDM_PORT=502 \
   -e FEED_IN_LIMIT=300 \
-  shelly-idmpump:latest
+  ghcr.io/robertdiers/shelly_idmpump:<release-tag>
 ```
 
 To avoid exposing the password in the shell history or process list, put the
@@ -53,10 +62,9 @@ Follow the log output (one line per cron run) with:
 docker logs -f shelly-idmpump
 ```
 
-`image.sh` builds and pushes a multi-arch image named
-`docker.io/robertdiers/goodweidm:latest` (the name is kept from the former
-Goodwe based version). If the container cannot reach the LAN devices, run it
-with `--network host` in addition to the options above.
+`image.sh` can be used to build and push a multi-arch image manually to GHCR
+(`docker login ghcr.io` is required first). If the container cannot reach the
+LAN devices, run it with `--network host` in addition to the options above.
 
 ## Notes
 
