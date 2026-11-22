@@ -25,7 +25,7 @@ environment variable:
 The released multi-arch image is published in the GitHub Container Registry:
 `ghcr.io/robertdiers/shelly_idmpump:<release-tag>` (see
 `.github/workflows/dockerbuild.yml`). Replace `<release-tag>` with the tag of
-the release you want to deploy (for example `v1.0.0`):
+the release you want to deploy (for example `1.0.0`):
 
 ```bash
 docker pull ghcr.io/robertdiers/shelly_idmpump:<release-tag>
